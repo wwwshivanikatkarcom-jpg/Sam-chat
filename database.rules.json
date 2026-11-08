@@ -1,0 +1,51 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "allowed": {
+      ".read": "auth != null && (auth.token.email == 'sam@sam.chat' || root.child('allowed/'+auth.uid).exists())",
+      ".write": "auth != null && auth.token.email == 'sam@sam.chat'"
+    },
+    "general": {
+      ".read": "auth != null && (auth.token.email == 'sam@sam.chat' || root.child('allowed/'+auth.uid).exists())",
+      ".write": "auth != null && (auth.token.email == 'sam@sam.chat' || root.child('allowed/'+auth.uid).exists())"
+    },
+    "dm": {
+      "$pair": {
+        ".read": "auth != null && $pair.contains(auth.uid) && (auth.token.email == 'sam@sam.chat' || root.child('allowed/'+auth.uid).exists())",
+        ".write": "auth != null && $pair.contains(auth.uid) && (auth.token.email == 'sam@sam.chat' || root.child('allowed/'+auth.uid).exists())"
+      }
+    },
+    "friends": {
+      "$a": {
+        ".read": "auth != null && auth.uid == $a",
+        ".write": "auth != null && auth.token.email == 'sam@sam.chat'",
+        "$b": {
+          ".write": "auth != null && (auth.uid == $a || auth.uid == $b) && (auth.token.email == 'sam@sam.chat' || root.child('allowed/'+auth.uid).exists())"
+        }
+      }
+    },
+    "users": {
+      "$uid": {
+        ".read": "auth != null && (auth.uid == $uid || auth.token.email == 'sam@sam.chat')",
+        ".write": "auth != null && (auth.uid == $uid || auth.token.email == 'sam@sam.chat')"
+      }
+    },
+    "questions": {
+      "$name": {
+        ".read": true,
+        ".write": "auth != null && (root.child('allowed/'+auth.uid).val() == $name || auth.token.email == 'sam@sam.chat')"
+      }
+    },
+    "recovery": {
+      "$uid": {
+        ".read": false,
+        ".write": "auth != null && (auth.uid == $uid || auth.token.email == 'sam@sam.chat')"
+      }
+    },
+    "tries": {
+      ".read": false,
+      ".write": false
+    }
+  }
+}

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang=hi>
+<head>
+<meta charset=utf-8>
+<meta name=viewport content='width=device-width,initial-scale=1'>
+<title>Sam Chat</title>
+<link rel=manifest href=manifest.json>
+<style>
+body{font-family:sans-serif;margin:0;background:#fff;color:#000}
+#top{background:#075e54;color:#fff;padding:8px;overflow:hidden}
+#top b{float:left}
+#top a{float:right;color:#fff;display:none}
+.p{padding:8px}
+input,button{font-size:16px;padding:6px;margin:3px 0}
+input{width:95%}
+.t a{display:inline-block;padding:6px;margin-right:4px;background:#eee;color:#000;text-decoration:none}
+#m{height:300px;overflow:auto;border:1px solid #ccc}
+.m,.me{margin:4px;padding:4px 6px;background:#eee;word-wrap:break-word}
+.me{background:#dcf8c6;text-align:right}
+.n{font-size:11px;color:#555}
+.l a{display:block;padding:8px;border-bottom:1px solid #ccc;color:#000;text-decoration:none}
+.err{color:red}
+</style>
+</head>
+<body>
+<div id=top><b>Sam Chat</b><a href=# id=lo>Logout</a></div>
+<div class=p id=v></div>
+<script>
+var CFG={apiKey:'YOUR_WEB_API_KEY',db:'https://YOUR-PROJECT-default-rtdb.firebaseio.com',owner:'sam',domain:'sam.chat',resetUrl:''};
+var S=null,chat=null,poll=null,TWO=7200000,Q='orderBy=%22%24key%22&limitToLast=40';
+function $(i){return document.getElementById(i)}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function keys(o){var a=[],k;for(k in o)a.push(k);return a}
+function xhr(m,u,b,cb){var r=new XMLHttpRequest();r.open(m,u,true);if(b!==null&&b!==undefined){r.setRequestHeader('Content-Type','application/json')}
+r.onreadystatechange=function(){if(r.readyState==4){var d=null;try{d=JSON.parse(r.responseText)}catch(e){}cb(r.status>=200&&r.status<300,d)}};
+r.send(b!==null&&b!==undefined?JSON.stringify(b):null)}
+function db(m,p,b,cb,q){xhr(m,CFG.db+p+'.json?'+(q?q+'&':'')+'auth='+S.tok,b,cb||function(){})}
+function auth(k,n,p,cb){xhr('POST','https://identitytoolkit.googleapis.com/v1/accounts:'+k+'?key='+CFG.apiKey,{email:n+'@'+CFG.domain,password:p,returnSecureToken:true},cb)}
+function okName(n){return /^[a-z0-9_]+$/.test(n)}
+function okPw(p){return /^[0-9]{10}$/.test(p)}
+function stop(){if(poll){clearInterval(poll);poll=null}}
+function msg(t){var e=$('e');if(e){e.textContent=t}}
+function uidOf(n){var k;for(k in S.names)if(S.names[k]==n)return k;return null}
+function pk(u){return [S.uid,u].sort().join('_')}
+
+function loginView(){stop();S=null;chat=null;$('lo').style.display='none';
+$('v').innerHTML='<p>यूज़रनेम</p><input id=u autocapitalize=off><p>पासवर्ड (10 अंक)</p><input id=pw type=password maxlength=10><br><button id=b>Login</button><p id=e class=err></p><a href=# id=fg>पासवर्ड भूल गए</a>';
+$('b').onclick=login;$('fg').onclick=function(){forgot();return false}}
+
+function login(){var n=$('u').value.trim().toLowerCase(),p=$('pw').value;
+if(!okName(n)||!okPw(p)){msg('यूज़रनेम या पासवर्ड का फ़ॉर्मेट गलत है');return}
+msg('...');
+auth('signInWithPassword',n,p,function(ok,d){if(!ok){msg('लॉगिन नहीं हुआ');return}
+S={n:n,uid:d.localId,tok:d.idToken,rt:d.refreshToken,own:n==CFG.owner,names:{},fr:{},top:{}};
+setInterval(renew,3000000);
+loadAll(function(good){if(!good){loginView();msg('आपका अकाउंट चालू नहीं है');return}$('lo').style.display='block';go('g')})})}
+
+function renew(){if(!S)return;var r=new XMLHttpRequest();r.open('POST','https://securetoken.googleapis.com/v1/token?key='+CFG.apiKey,true);
+r.setRequestHeader('Content-Type','application/x-www-form-urlencoded');
+r.onreadystatechange=function(){if(r.readyState==4&&r.status==200&&S){try{var d=JSON.parse(r.responseText);S.tok=d.id_token;S.rt=d.refresh_token}catch(e){}}};
+r.send('grant_type=refresh_token&refresh_token='+encodeURIComponent(S.rt))}
+
+function loadAll(cb){db('GET','/allowed',null,function(o,a){if(!o&&!S.own){cb(false);return}S.names=a||{};
+db('GET','/friends/'+S.uid,null,function(o2,f){S.fr=f||{};
+db('GET','/users/'+S.uid+'/top',null,function(o3,t){S.top=t||{};cb(true)})})})}
+
+function go(t){chat=null;stop();
+$('v').innerHTML='<div class=t><a href=# data-t=g>सबके साथ</a><a href=# data-t=d>DM</a><a href=# data-t=f>दोस्त</a>'+(S.own?'<a href=# data-t=a>Admin</a>':'')+'<a href=# data-t=s>सेटिंग</a></div><div id=c></div>';
+var l=$('v').getElementsByTagName('a'),i;for(i=0;i<l.length;i++){l[i].onclick=function(){go(this.getAttribute('data-t'));return false}}
+if(t=='g')openChat('/general',null,'सबके साथ');
+else if(t=='d')dmList();else if(t=='f')friends();else if(t=='a')admin();else sett()}
+
+function openChat(path,peer,title){stop();chat={p:path,peer:peer};
+$('c').innerHTML=(peer?'<a href=# id=bk>← वापस</a>':'')+'<p><b>'+esc(title)+'</b></p><div id=m></div><input id=i maxlength=500><br><button id=s>Send</button>';
+if(peer){$('bk').onclick=function(){go('d');return false}}
+$('s').onclick=send;$('i').onkeydown=function(e){if((e||event).keyCode==13)send()};
+tick();poll=setInterval(tick,3000)}
+
+function tick(){if(!chat)return;var c=chat;db('GET',c.p,null,function(ok,d){if(c!==chat||!ok)return;draw(d||{})},Q)}
+
+function done(s,all,now){var i;if(!all.length)return false;for(i=0;i<all.length;i++){if(!s[all[i]]||now-s[all[i]]<=TWO)return false}return true}
+
+function draw(d){var ks=keys(d).sort(),now=Date.now(),h='',i,k,m,s,me,all=chat.peer?[S.uid,chat.peer]:keys(S.names);
+for(i=0;i<ks.length;i++){k=ks[i];m=d[k];s=m.s||{};me=m.u==S.uid;
+if(done(s,all,now)){db('DELETE',chat.p+'/'+k);continue}
+if(s[S.uid]&&now-s[S.uid]>TWO)continue;
+if(!s[S.uid])db('PUT',chat.p+'/'+k+'/s/'+S.uid,now);
+h+='<div class='+(me?'me':'m')+'><div class=n>'+esc(m.f)+(me?' <a href=# data-k='+k+'>unsend</a>':'')+'</div>'+esc(m.x)+'</div>'}
+var b=$('m');if(!b)return;b.innerHTML=h;b.scrollTop=b.scrollHeight;
+var a=b.getElementsByTagName('a');for(i=0;i<a.length;i++){a[i].onclick=function(){db('DELETE',chat.p+'/'+this.getAttribute('data-k'),null,tick);return false}}}
+
+function send(){var i=$('i'),t=i.value.trim();if(!t||!chat)return;i.value='';
+var o={f:S.n,u:S.uid,x:t,t:{'.sv':'timestamp'},s:{}};o.s[S.uid]=Date.now();
+db('POST',chat.p,o,function(){tick()})}
+
+function dmList(){loadAll(function(){
+var t=[],r=[],k,arr,cn={};
+for(k in S.fr)if(S.fr[k]=='accepted')(S.top[k]?t:r).push(k);
+arr=t.concat(r);
+if(!arr.length){$('c').innerHTML='<p>अभी कोई दोस्त नहीं। दोस्त टैब से जोड़ो।</p>';return}
+$('c').innerHTML='<div class=l id=l></div>';
+function paint(){var l=$('l');if(!l)return;var h='',i,u;for(i=0;i<arr.length;i++){u=arr[i];h+='<a href=# data-u='+u+'>'+(S.top[u]?'★ ':'')+esc(S.names[u]||u)+(cn[u]?' ('+cn[u]+')':'')+'</a>'}
+l.innerHTML=h;var a=l.getElementsByTagName('a'),j;for(j=0;j<a.length;j++){a[j].onclick=function(){var u=this.getAttribute('data-u');openChat('/dm/'+pk(u),u,S.names[u]||u);return false}}}
+function count(){var i;for(i=0;i<arr.length;i++){(function(u){db('GET','/dm/'+pk(u),null,function(ok,d){var n=0,x,m;d=d||{};for(x in d){m=d[x];if(m.u!=S.uid&&!(m.s&&m.s[S.uid]))n++}cn[u]=n;paint()},Q)})(arr[i])}}
+paint();count();stop();poll=setInterval(count,5000)})}
+
+function friends(){loadAll(function(){
+var h='<p>यूज़रनेम से दोस्त जोड़ो</p><input id=fn><br><button id=fb>Request भेजो</button><p id=e class=err></p><div class=l>',k,n;
+for(k in S.fr){n=esc(S.names[k]||k);
+if(S.fr[k]=='incoming')h+='<a>'+n+' <button data-act=acc data-u='+k+'>Accept</button> <button data-act=dec data-u='+k+'>Decline</button></a>';
+else if(S.fr[k]=='accepted')h+='<a>'+n+' <button data-act=star data-u='+k+'>'+(S.top[k]?'★ हटाओ':'☆ करीबी')+'</button></a>';
+else h+='<a>'+n+' (भेजा)</a>'}
+$('c').innerHTML=h+'</div>';
+$('fb').onclick=function(){var u=uidOf($('fn').value.trim().toLowerCase());if(!u||u==S.uid){msg('ये यूज़रनेम नहीं मिला');return}
+db('PUT','/friends/'+S.uid+'/'+u,'sent',function(){db('PUT','/friends/'+u+'/'+S.uid,'incoming',function(){friends()})})};
+$('c').onclick=function(e){var t=(e||event).target||event.srcElement,a=t.getAttribute&&t.getAttribute('data-act'),u=t.getAttribute&&t.getAttribute('data-u');if(!a)return;
+if(a=='acc'){db('PUT','/friends/'+S.uid+'/'+u,'accepted',function(){db('PUT','/friends/'+u+'/'+S.uid,'accepted',function(){friends()})})}
+else if(a=='dec'){db('DELETE','/friends/'+S.uid+'/'+u,null,function(){db('DELETE','/friends/'+u+'/'+S.uid,null,function(){friends()})})}
+else if(a=='star'){if(S.top[u]){db('DELETE','/users/'+S.uid+'/top/'+u,null,function(){friends()})}
+else if(keys(S.top).length>=10){msg('सिर्फ 10 करीबी दोस्त')}
+else{db('PUT','/users/'+S.uid+'/top/'+u,true,function(){friends()})}}}})}
+
+function delAll(ps,cb){if(!ps.length){cb();return}db('DELETE',ps.shift(),null,function(){delAll(ps,cb)})}
+
+function admin(){loadAll(function(){
+var h='<p>नया यूज़र</p><input id=nu placeholder=यूज़रनेम><br><input id=np maxlength=10 placeholder=10अंक-पासवर्ड><br><button id=ab>Add</button><p id=e class=err></p><div class=l>',k;
+for(k in S.names)h+='<a>'+esc(S.names[k])+' <button data-act=del data-u='+k+'>Remove</button></a>';
+$('c').innerHTML=h+'</div>';
+$('ab').onclick=function(){var n=$('nu').value.trim().toLowerCase(),p=$('np').value;
+if(!okName(n)||!okPw(p)){msg('यूज़रनेम (अक्षर, अंक, _) और 10 अंक का पासवर्ड');return}
+auth('signUp',n,p,function(ok,d){if(!ok){msg('नहीं बना (शायद पहले से है)');return}
+db('PUT','/allowed/'+d.localId,n,function(){admin()})})};
+$('c').onclick=function(e){var t=(e||event).target||event.srcElement,u=t.getAttribute&&t.getAttribute('data-u');if(!u||t.getAttribute('data-act')!='del')return;
+delAll(['/allowed/'+u,'/friends/'+u,'/users/'+u,'/recovery/'+u,'/questions/'+S.names[u]],function(){admin()})}})}
+
+function sett(){$('c').innerHTML='<p>पासवर्ड रीसेट के लिए दो सवाल और जवाब चुनो</p><input id=q1 placeholder=सवाल1><br><input id=a1 placeholder=जवाब1><br><input id=q2 placeholder=सवाल2><br><input id=a2 placeholder=जवाब2><br><button id=sb>Save</button><p id=e class=err></p>';
+$('sb').onclick=function(){var q1=$('q1').value.trim(),a1=$('a1').value.trim(),q2=$('q2').value.trim(),a2=$('a2').value.trim();
+if(!q1||!a1||!q2||!a2){msg('सब भरो');return}
+db('PUT','/questions/'+S.n,{q1:q1,q2:q2},function(ok){if(!ok){msg('सेव नहीं हुआ');return}
+db('PUT','/recovery/'+S.uid,{a1:a1,a2:a2},function(ok2){msg(ok2?'सेव हो गया':'सेव नहीं हुआ')})})}}
+
+function forgot(){$('v').innerHTML='<p>यूज़रनेम</p><input id=u><br><button id=b>सवाल दिखाओ</button><p id=e class=err></p><div id=r></div><a href=# id=bk>← वापस</a>';
+$('bk').onclick=function(){loginView();return false};
+$('b').onclick=function(){var n=$('u').value.trim().toLowerCase();if(!okName(n)){msg('यूज़रनेम गलत है');return}
+xhr('GET',CFG.db+'/questions/'+n+'.json',null,function(ok,q){if(!q){msg('इस यूज़र ने सवाल नहीं चुने');return}
+$('r').innerHTML='<p>'+esc(q.q1)+'</p><input id=a1><p>'+esc(q.q2)+'</p><input id=a2><p>नया पासवर्ड (10 अंक)</p><input id=np type=password maxlength=10><br><button id=rb>Reset</button>';
+$('rb').onclick=function(){var np=$('np').value;if(!okPw(np)){msg('पासवर्ड 10 अंक का हो');return}
+if(!CFG.resetUrl){msg('रीसेट अभी चालू नहीं है, Sam से कहो');return}
+xhr('POST',CFG.resetUrl,{u:n,a1:$('a1').value,a2:$('a2').value,np:np},function(ok2){msg(ok2?'पासवर्ड बदल गया, अब लॉगिन करो':'जवाब गलत हैं');if(ok2)setTimeout(loginView,1500)})}})}}
+
+$('lo').onclick=function(){loginView();return false};
+loginView();
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js')}
+</script>
+</body>
+</html>

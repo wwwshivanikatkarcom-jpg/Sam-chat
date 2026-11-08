@@ -1,0 +1,9 @@
+{
+  "name": "Sam Private Chat",
+  "short_name": "SamChat",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#075e54",
+  "icons": []
+}
