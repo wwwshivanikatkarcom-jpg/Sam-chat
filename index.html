@@ -1,35 +1,58 @@
 <!DOCTYPE html>
-<html lang=hi>
+<html lang="hi">
 <head>
-<meta charset=utf-8>
-<meta name=viewport content='width=device-width,initial-scale=1'>
-<title>Sam Chat</title>
-<link rel=manifest href=manifest.json>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Sam Chat - Modern & Lightweight</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#075e54">
 <style>
-body{font-family:sans-serif;margin:0;background:#fff;color:#000}
-#top{background:#075e54;color:#fff;padding:8px;overflow:hidden}
-#top b{float:left}
-#top a{float:right;color:#fff;display:none}
-.p{padding:8px}
-input,button{font-size:16px;padding:6px;margin:3px 0}
-input{width:95%}
-.t a{display:inline-block;padding:6px;margin-right:4px;background:#eee;color:#000;text-decoration:none}
-#m{height:300px;overflow:auto;border:1px solid #ccc}
-.m,.me{margin:4px;padding:4px 6px;background:#eee;word-wrap:break-word}
-.me{background:#dcf8c6;text-align:right}
-.n{font-size:11px;color:#555}
-.l a{display:block;padding:8px;border-bottom:1px solid #ccc;color:#000;text-decoration:none}
-.err{color:red}
+:root{--primary:#075e54;--primary-dark:#0b4d45;--bg:#f0f2f5;--bubble-me:#dcf8c6;--bubble-other:#fff;--text:#333;--border:#ddd}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;margin:0;background:var(--bg);color:var(--text);display:flex;flex-direction:column;height:100vh;height:-webkit-fill-available}
+#top{background:var(--primary);color:#fff;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 4px rgba(0,0,0,0.1);z-index:10}
+#top b{font-size:18px;letter-spacing:0.5px}
+#top a{color:#fff;text-decoration:none;font-size:14px;background:rgba(255,255,255,0.2);padding:6px 12px;border-radius:20px;transition:background 0.2s;display:none}
+#top a:hover{background:rgba(255,255,255,0.3)}
+.p{padding:16px;flex:1;overflow-y:auto;display:flex;flex-direction:column;justify-content:center;max-width:480px;width:100%;box-sizing:border-box;margin:0 auto}
+.auth-card{background:#fff;padding:24px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.05);width:100%;box-sizing:border-box}
+input,button{font-size:16px;padding:12px;margin:8px 0;box-sizing:border-box;border-radius:8px;border:1px solid var(--border);outline:none;width:100%}
+input:focus{border-color:var(--primary);box-shadow:0 0 0 2px rgba(7,94,84,0.1)}
+button{background:var(--primary);color:#fff;border:none;font-weight:600;cursor:pointer;transition:background 0.2s}
+button:active{background:var(--primary-dark)}
+.t{display:flex;background:#fff;border-bottom:1px solid var(--border);overflow-x:auto;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,0.05)}
+.t::-webkit-scrollbar{display:none}
+.t a{display:inline-block;padding:12px 16px;color:#666;text-decoration:none;font-weight:600;font-size:14px;border-bottom:2px solid transparent;transition:all 0.2s}
+.t a.active{color:var(--primary);border-bottom-color:var(--primary)}
+#c{flex:1;display:flex;flex-direction:column;overflow:hidden;background:#efeae2;position:relative}
+#m{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column}
+.m,.me{max-width:75%;margin:6px 0;padding:10px 14px;border-radius:12px;word-wrap:break-word;font-size:15px;line-height:1.4;box-shadow:0 1px 2px rgba(0,0,0,0.1);position:relative}
+.m{background:var(--bubble-other);align-self:flex-start;border-top-left-radius:2px}
+.me{background:var(--bubble-me);align-self:flex-end;border-top-right-radius:2px}
+.n{font-size:11px;color:#777;margin-bottom:4px;font-weight:600}
+.me .n{color:#2e7d32}
+.chat-input-area{display:flex;padding:10px;background:#f0f2f5;align-items:center;border-top:1px solid var(--border)}
+.chat-input-area input{margin:0;flex:1;border-radius:24px;border:1px solid var(--border);padding:10px 16px;background:#fff}
+.chat-input-area button{width:auto;margin:0 0 0 8px;border-radius:50%;width:44px;height:44px;display:flex;align-items:center;justify-content:center;padding:0}
+.l{background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.05);margin-top:10px}
+.l a{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--border);color:#000;text-decoration:none;background:#fff;transition:background 0.1s}
+.l a:hover{background:#f9f9f9}
+.l a:last-child{border-bottom:none}
+.err{color:#d32f2f;font-size:14px;margin:8px 0;text-align:center}
+.center-link{text-align:center;margin-top:15px}
+.center-link a{color:var(--primary);text-decoration:none;font-weight:600}
+.action-btn{padding:6px 12px;font-size:12px;width:auto;margin:0 4px;border-radius:4px}
+.del-btn{background:#d32f2f}
+.acc-btn{background:#2e7d32}
 </style>
 </head>
 <body>
-<div id=top><b>Sam Chat</b><a href=# id=lo>Logout</a></div>
-<div class=p id=v></div>
+<div id="top"><b>Sam Chat</b><a href="#" id="lo">लॉगआउट</a></div>
+<div id="v" style="flex:1;display:flex;flex-direction:column;overflow:hidden;"></div>
 <script>
 var CFG={apiKey:'YOUR_WEB_API_KEY',db:'https://YOUR-PROJECT-default-rtdb.firebaseio.com',owner:'sam',domain:'sam.chat',resetUrl:''};
 var S=null,chat=null,poll=null,TWO=7200000,Q='orderBy=%22%24key%22&limitToLast=40';
 function $(i){return document.getElementById(i)}
-function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 function keys(o){var a=[],k;for(k in o)a.push(k);return a}
 function xhr(m,u,b,cb){var r=new XMLHttpRequest();r.open(m,u,true);if(b!==null&&b!==undefined){r.setRequestHeader('Content-Type','application/json')}
 r.onreadystatechange=function(){if(r.readyState==4){var d=null;try{d=JSON.parse(r.responseText)}catch(e){}cb(r.status>=200&&r.status<300,d)}};
@@ -44,16 +67,16 @@ function uidOf(n){var k;for(k in S.names)if(S.names[k]==n)return k;return null}
 function pk(u){return [S.uid,u].sort().join('_')}
 
 function loginView(){stop();S=null;chat=null;$('lo').style.display='none';
-$('v').innerHTML='<p>यूज़रनेम</p><input id=u autocapitalize=off><p>पासवर्ड (10 अंक)</p><input id=pw type=password maxlength=10><br><button id=b>Login</button><p id=e class=err></p><a href=# id=fg>पासवर्ड भूल गए</a>';
+$('v').innerHTML='<div class="p"><div class="auth-card"><h2 style="margin-top:0;color:var(--primary);text-align:center;">Sam Chat</h2><p style="margin-bottom:4px;font-weight:600;font-size:14px;">यूज़रनेम</p><input id="u" autocapitalize="off" placeholder="यूज़रनेम दर्ज करें"><p style="margin-bottom:4px;font-weight:600;font-size:14px;">पासवर्ड (10 अंक)</p><input id="pw" type="password" maxlength="10" placeholder="••••••••••"><button id="b">लॉगिन करें</button><p id="e" class="err"></p><div class="center-link"><a href="#" id="fg">पासवर्ड भूल गए?</a></div></div></div>';
 $('b').onclick=login;$('fg').onclick=function(){forgot();return false}}
 
 function login(){var n=$('u').value.trim().toLowerCase(),p=$('pw').value;
-if(!okName(n)||!okPw(p)){msg('यूज़रनेम या पासवर्ड का फ़ॉर्मेट गलत है');return}
-msg('...');
-auth('signInWithPassword',n,p,function(ok,d){if(!ok){msg('लॉगिन नहीं हुआ');return}
+if(!okName(n)||!okPw(p)){msg('यूज़रनेम या 10-अंकों का पासवर्ड गलत है');return}
+msg('लॉगिन हो रहा है...');
+auth('signInWithPassword',n,p,function(ok,d){if(!ok){msg('लॉगिन विफल रहा');return}
 S={n:n,uid:d.localId,tok:d.idToken,rt:d.refreshToken,own:n==CFG.owner,names:{},fr:{},top:{}};
 setInterval(renew,3000000);
-loadAll(function(good){if(!good){loginView();msg('आपका अकाउंट चालू नहीं है');return}$('lo').style.display='block';go('g')})})}
+loadAll(function(good){if(!good){loginView();msg('आपका अकाउंट अधिकृत नहीं है');return}$('lo').style.display='block';go('g')})})}
 
 function renew(){if(!S)return;var r=new XMLHttpRequest();r.open('POST','https://securetoken.googleapis.com/v1/token?key='+CFG.apiKey,true);
 r.setRequestHeader('Content-Type','application/x-www-form-urlencoded');
@@ -65,13 +88,18 @@ db('GET','/friends/'+S.uid,null,function(o2,f){S.fr=f||{};
 db('GET','/users/'+S.uid+'/top',null,function(o3,t){S.top=t||{};cb(true)})})})}
 
 function go(t){chat=null;stop();
-$('v').innerHTML='<div class=t><a href=# data-t=g>सबके साथ</a><a href=# data-t=d>DM</a><a href=# data-t=f>दोस्त</a>'+(S.own?'<a href=# data-t=a>Admin</a>':'')+'<a href=# data-t=s>सेटिंग</a></div><div id=c></div>';
-var l=$('v').getElementsByTagName('a'),i;for(i=0;i<l.length;i++){l[i].onclick=function(){go(this.getAttribute('data-t'));return false}}
+var tabs=[{id:'g',l:'सबके साथ'},{id:'d',l:'DM'},{id:'f',l:'दोस्त'}];
+if(S.own)tabs.push({id:'a',l:'Admin'});
+tabs.push({id:'s',l:'सेटिंग'});
+var th='<div class="t">';for(var i=0;i<tabs.length;i++){th+='<a href="#" data-t="'+tabs[i].id+'" '+(tabs[i].id==t?'class="active"':'')+'>'+tabs[i].l+'</a>'}
+th+='</div><div id="c"></div>';
+$('v').innerHTML=th;
+var l=$('v').getElementsByTagName('a'),j;for(j=0;j<l.length;j++){l[j].onclick=function(){go(this.getAttribute('data-t'));return false}}
 if(t=='g')openChat('/general',null,'सबके साथ');
 else if(t=='d')dmList();else if(t=='f')friends();else if(t=='a')admin();else sett()}
 
 function openChat(path,peer,title){stop();chat={p:path,peer:peer};
-$('c').innerHTML=(peer?'<a href=# id=bk>← वापस</a>':'')+'<p><b>'+esc(title)+'</b></p><div id=m></div><input id=i maxlength=500><br><button id=s>Send</button>';
+$('c').innerHTML=(peer?'<div style="background:#fff;padding:8px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;"><a href="#" id="bk" style="color:var(--primary);text-decoration:none;font-weight:600;margin-right:12px;">← वापस</a><span style="font-weight:600;">'+esc(title)+'</span></div>':'')+'<div id="m"></div><div class="chat-input-area"><input id="i" maxlength="500" placeholder="संदेश लिखें..."><button id="s"><svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg></button></div>';
 if(peer){$('bk').onclick=function(){go('d');return false}}
 $('s').onclick=send;$('i').onkeydown=function(e){if((e||event).keyCode==13)send()};
 tick();poll=setInterval(tick,3000)}
@@ -85,7 +113,7 @@ for(i=0;i<ks.length;i++){k=ks[i];m=d[k];s=m.s||{};me=m.u==S.uid;
 if(done(s,all,now)){db('DELETE',chat.p+'/'+k);continue}
 if(s[S.uid]&&now-s[S.uid]>TWO)continue;
 if(!s[S.uid])db('PUT',chat.p+'/'+k+'/s/'+S.uid,now);
-h+='<div class='+(me?'me':'m')+'><div class=n>'+esc(m.f)+(me?' <a href=# data-k='+k+'>unsend</a>':'')+'</div>'+esc(m.x)+'</div>'}
+h+='<div class='+(me?'me':'m')+'><div class=n>'+esc(m.f)+(me?' <a href="#" data-k="'+k+'" style="color:#d32f2f;font-weight:normal;text-decoration:none;margin-left:6px;">अनसेंड</a>':'')+'</div>'+esc(m.x)+'</div>'}
 var b=$('m');if(!b)return;b.innerHTML=h;b.scrollTop=b.scrollHeight;
 var a=b.getElementsByTagName('a');for(i=0;i<a.length;i++){a[i].onclick=function(){db('DELETE',chat.p+'/'+this.getAttribute('data-k'),null,tick);return false}}}
 
@@ -97,56 +125,58 @@ function dmList(){loadAll(function(){
 var t=[],r=[],k,arr,cn={};
 for(k in S.fr)if(S.fr[k]=='accepted')(S.top[k]?t:r).push(k);
 arr=t.concat(r);
-if(!arr.length){$('c').innerHTML='<p>अभी कोई दोस्त नहीं। दोस्त टैब से जोड़ो।</p>';return}
-$('c').innerHTML='<div class=l id=l></div>';
-function paint(){var l=$('l');if(!l)return;var h='',i,u;for(i=0;i<arr.length;i++){u=arr[i];h+='<a href=# data-u='+u+'>'+(S.top[u]?'★ ':'')+esc(S.names[u]||u)+(cn[u]?' ('+cn[u]+')':'')+'</a>'}
+if(!arr.length){$('c').innerHTML='<div style="padding:32px;text-align:center;color:#666;"><p>अभी कोई चैट उपलब्ध नहीं है।</p><p>दोस्तों से जुड़ने के लिए "दोस्त" टैब पर जाएं।</p></div>';return}
+$('c').innerHTML='<div style="padding:16px;overflow-y:auto;flex:1;"><div class="l" id="l"></div></div>';
+function paint(){var l=$('l');if(!l)return;var h='',i,u;for(i=0;i<arr.length;i++){u=arr[i];h+='<a href="#" data-u="'+u+'"><span style="font-weight:600;">'+(S.top[u]?'★ ':'' )+esc(S.names[u]||u)+'</span>'+(cn[u]?'<span style="background:var(--primary);color:#white;padding:2px 8px;border-radius:10px;font-size:12px;">'+cn[u]+'</span>':'')+'</a>'}
 l.innerHTML=h;var a=l.getElementsByTagName('a'),j;for(j=0;j<a.length;j++){a[j].onclick=function(){var u=this.getAttribute('data-u');openChat('/dm/'+pk(u),u,S.names[u]||u);return false}}}
 function count(){var i;for(i=0;i<arr.length;i++){(function(u){db('GET','/dm/'+pk(u),null,function(ok,d){var n=0,x,m;d=d||{};for(x in d){m=d[x];if(m.u!=S.uid&&!(m.s&&m.s[S.uid]))n++}cn[u]=n;paint()},Q)})(arr[i])}}
 paint();count();stop();poll=setInterval(count,5000)})}
 
 function friends(){loadAll(function(){
-var h='<p>यूज़रनेम से दोस्त जोड़ो</p><input id=fn><br><button id=fb>Request भेजो</button><p id=e class=err></p><div class=l>',k,n;
-for(k in S.fr){n=esc(S.names[k]||k);
-if(S.fr[k]=='incoming')h+='<a>'+n+' <button data-act=acc data-u='+k+'>Accept</button> <button data-act=dec data-u='+k+'>Decline</button></a>';
-else if(S.fr[k]=='accepted')h+='<a>'+n+' <button data-act=star data-u='+k+'>'+(S.top[k]?'★ हटाओ':'☆ करीबी')+'</button></a>';
-else h+='<a>'+n+' (भेजा)</a>'}
-$('c').innerHTML=h+'</div>';
-$('fb').onclick=function(){var u=uidOf($('fn').value.trim().toLowerCase());if(!u||u==S.uid){msg('ये यूज़रनेम नहीं मिला');return}
+var h='<div style="padding:16px;overflow-y:auto;flex:1;"><div class="auth-card" style="margin-bottom:16px;"><p style="margin-top:0;font-weight:600;">यूज़रनेम से दोस्त जोड़ें</p><input id="fn" placeholder="यूज़रनेम दर्ज करें"><button id="fb">फ्रेंड रिक्वेस्ट भेजें</button><p id="e" class="err"></p></div><div class="l">';
+let hasFr = false;
+for(k in S.fr){hasFr=true;n=esc(S.names[k]||k);
+if(S.fr[k]=='incoming')h+='<a><span>'+n+' (रिक्वेस्ट आई है)</span><div><button class="action-btn acc-btn" data-act="acc" data-u="'+k+'">स्वीकार करें</button><button class="action-btn del-btn" data-act="dec" data-u="'+k+'">हटाएं</button></div></a>';
+else if(S.fr[k]=='accepted')h+='<a><span>'+n+'</span><button class="action-btn" data-act="star" data-u="'+k+'">'+(S.top[k]?'★ अनपिन करें':'☆ पिन करें')+'</button></a>';
+else h+='<a><span>'+n+' (रिक्वेस्ट भेजी गई)</span></a>'}
+if(!hasFr) h+='<div style="padding:16px;text-align:center;color:#666;">कोई दोस्त या रिक्वेस्ट नहीं है।</div>';
+$('c').innerHTML=h+'</div></div>';
+$('fb').onclick=function(){var u=uidOf($('fn').value.trim().toLowerCase());if(!u||u==S.uid){msg('यूज़रनेम नहीं मिला');return}
 db('PUT','/friends/'+S.uid+'/'+u,'sent',function(){db('PUT','/friends/'+u+'/'+S.uid,'incoming',function(){friends()})})};
 $('c').onclick=function(e){var t=(e||event).target||event.srcElement,a=t.getAttribute&&t.getAttribute('data-act'),u=t.getAttribute&&t.getAttribute('data-u');if(!a)return;
 if(a=='acc'){db('PUT','/friends/'+S.uid+'/'+u,'accepted',function(){db('PUT','/friends/'+u+'/'+S.uid,'accepted',function(){friends()})})}
 else if(a=='dec'){db('DELETE','/friends/'+S.uid+'/'+u,null,function(){db('DELETE','/friends/'+u+'/'+S.uid,null,function(){friends()})})}
 else if(a=='star'){if(S.top[u]){db('DELETE','/users/'+S.uid+'/top/'+u,null,function(){friends()})}
-else if(keys(S.top).length>=10){msg('सिर्फ 10 करीबी दोस्त')}
+else if(keys(S.top).length>=10){msg('अधिकतम 10 करीबी दोस्त ही जोड़ सकते हैं')}
 else{db('PUT','/users/'+S.uid+'/top/'+u,true,function(){friends()})}}}})}
 
 function delAll(ps,cb){if(!ps.length){cb();return}db('DELETE',ps.shift(),null,function(){delAll(ps,cb)})}
 
 function admin(){loadAll(function(){
-var h='<p>नया यूज़र</p><input id=nu placeholder=यूज़रनेम><br><input id=np maxlength=10 placeholder=10अंक-पासवर्ड><br><button id=ab>Add</button><p id=e class=err></p><div class=l>',k;
-for(k in S.names)h+='<a>'+esc(S.names[k])+' <button data-act=del data-u='+k+'>Remove</button></a>';
-$('c').innerHTML=h+'</div>';
+var h='<div style="padding:16px;overflow-y:auto;flex:1;"><div class="auth-card" style="margin-bottom:16px;"><p style="margin-top:0;font-weight:600;">नया यूज़र जोड़ें</p><input id="nu" placeholder="यूज़रनेम"><input id="np" maxlength="10" type="password" placeholder="10 अंकों का पासवर्ड"><button id="ab">यूनिट जोड़ें</button><p id="e" class="err"></p></div><div class="l">';
+for(k in S.names)h+='<a><span>'+esc(S.names[k])+'</span><button class="action-btn del-btn" data-act="del" data-u="'+k+'">हटाएं</button></a>';
+$('c').innerHTML=h+'</div></div>';
 $('ab').onclick=function(){var n=$('nu').value.trim().toLowerCase(),p=$('np').value;
-if(!okName(n)||!okPw(p)){msg('यूज़रनेम (अक्षर, अंक, _) और 10 अंक का पासवर्ड');return}
-auth('signUp',n,p,function(ok,d){if(!ok){msg('नहीं बना (शायद पहले से है)');return}
+if(!okName(n)||!okPw(p)){msg('यूज़रनेम सही रखें और पासवर्ड ठीक 10 अंकों का हो');return}
+auth('signUp',n,p,function(ok,d){if(!ok){msg('अकाउंट नहीं बना (शायद पहले से मौजूद है)');return}
 db('PUT','/allowed/'+d.localId,n,function(){admin()})})};
 $('c').onclick=function(e){var t=(e||event).target||event.srcElement,u=t.getAttribute&&t.getAttribute('data-u');if(!u||t.getAttribute('data-act')!='del')return;
 delAll(['/allowed/'+u,'/friends/'+u,'/users/'+u,'/recovery/'+u,'/questions/'+S.names[u]],function(){admin()})}})}
 
-function sett(){$('c').innerHTML='<p>पासवर्ड रीसेट के लिए दो सवाल और जवाब चुनो</p><input id=q1 placeholder=सवाल1><br><input id=a1 placeholder=जवाब1><br><input id=q2 placeholder=सवाल2><br><input id=a2 placeholder=जवाब2><br><button id=sb>Save</button><p id=e class=err></p>';
+function sett(){$('c').innerHTML='<div style="padding:16px;overflow-y:auto;flex:1;"><div class="auth-card"><p style="margin-top:0;font-weight:600;">पासवर्ड रीसेट सुरक्षा प्रश्न</p><input id="q1" placeholder="पहला सवाल (जैसे: आपका पसंदीदा रंग?)"><input id="a1" placeholder="पहले सवाल का जवाब"><input id="q2" placeholder="दूसरा सवाल (जैसे: आपके पहले स्कूल का नाम?)"><input id="a2" placeholder="दूसरे सवाल का जवाब"><button id="sb">सेटिंग्स सेव करें</button><p id="e" class="err"></p></div></div>';
 $('sb').onclick=function(){var q1=$('q1').value.trim(),a1=$('a1').value.trim(),q2=$('q2').value.trim(),a2=$('a2').value.trim();
-if(!q1||!a1||!q2||!a2){msg('सब भरो');return}
-db('PUT','/questions/'+S.n,{q1:q1,q2:q2},function(ok){if(!ok){msg('सेव नहीं हुआ');return}
-db('PUT','/recovery/'+S.uid,{a1:a1,a2:a2},function(ok2){msg(ok2?'सेव हो गया':'सेव नहीं हुआ')})})}}
+if(!q1||!a1||!q2||!a2){msg('सभी फ़ील्ड भरना अनिवार्य है');return}
+db('PUT','/questions/'+S.n,{q1:q1,q2:q2},function(ok){if(!ok){msg('सेव करने में असफल');return}
+db('PUT','/recovery/'+S.uid,{a1:a1,a2:a2},function(ok2){msg(ok2?'सफलतापूर्वक सेव हो गया':'सेव नहीं हो पाया')})})}}
 
-function forgot(){$('v').innerHTML='<p>यूज़रनेम</p><input id=u><br><button id=b>सवाल दिखाओ</button><p id=e class=err></p><div id=r></div><a href=# id=bk>← वापस</a>';
+function forgot(){$('v').innerHTML='<div class="p"><div class="auth-card"><h2 style="margin-top:0;color:var(--primary);text-align:center;">पासवर्ड रीसेट</h2><p style="margin-bottom:4px;font-weight:600;font-size:14px;">यूज़रनेम</p><input id="u" placeholder="अपना यूज़रनेम डालें"><button id="b">सुरक्षा सवाल देखें</button><p id="e" class="err"></p><div id="r"></div><div class="center-link"><a href="#" id="bk">← लॉगिन पेज पर वापस जाएं</a></div></div></div>';
 $('bk').onclick=function(){loginView();return false};
 $('b').onclick=function(){var n=$('u').value.trim().toLowerCase();if(!okName(n)){msg('यूज़रनेम गलत है');return}
-xhr('GET',CFG.db+'/questions/'+n+'.json',null,function(ok,q){if(!q){msg('इस यूज़र ने सवाल नहीं चुने');return}
-$('r').innerHTML='<p>'+esc(q.q1)+'</p><input id=a1><p>'+esc(q.q2)+'</p><input id=a2><p>नया पासवर्ड (10 अंक)</p><input id=np type=password maxlength=10><br><button id=rb>Reset</button>';
-$('rb').onclick=function(){var np=$('np').value;if(!okPw(np)){msg('पासवर्ड 10 अंक का हो');return}
-if(!CFG.resetUrl){msg('रीसेट अभी चालू नहीं है, Sam से कहो');return}
-xhr('POST',CFG.resetUrl,{u:n,a1:$('a1').value,a2:$('a2').value,np:np},function(ok2){msg(ok2?'पासवर्ड बदल गया, अब लॉगिन करो':'जवाब गलत हैं');if(ok2)setTimeout(loginView,1500)})}})}}
+xhr('GET',CFG.db+'/questions/'+n+'.json',null,function(ok,q){if(!q){msg('इस यूज़र के लिए कोई सवाल नहीं मिला');return}
+$('r').innerHTML='<p style="margin-bottom:4px;font-weight:600;font-size:14px;">'+esc(q.q1)+'</p><input id="a1"><p style="margin-bottom:4px;font-weight:600;font-size:14px;">'+esc(q.q2)+'</p><input id="a2"><p style="margin-bottom:4px;font-weight:600;font-size:14px;">नया पासवर्ड (10 अंक)</p><input id="np" type="password" maxlength="10"><button id="rb">पासवर्ड बदलें</button>';
+$('rb').onclick=function(){var np=$('np').value;if(!okPw(np)){msg('नया पासवर्ड ठीक 10 अंकों का होना चाहिए');return}
+if(!CFG.resetUrl){msg('रीसेट URL सेट नहीं किया गया है');return}
+xhr('POST',CFG.resetUrl,{u:n,a1:$('a1').value,a2:$('a2').value,np:np},function(ok2){msg(ok2?'पासवर्ड बदल गया! अब लॉगिन करें':'जवाब गलत हैं');if(ok2)setTimeout(loginView,1500)})}})}}
 
 $('lo').onclick=function(){loginView();return false};
 loginView();
